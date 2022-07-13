@@ -4,23 +4,24 @@
 
 ## Introduction
 
-Physical events are often packed with several brand activation activities and photo booths are always a must. We can make our space exciting and engaging to our audience by creating a photo booth. The virtual photo booth will take user images apply cool effect transformations and display them in a gallery.
+Modern web and mobile applications allow users to upload images to be used for their profiles. Using Cloudinary we will upload, transform and optimize the image uploaded and return a profile image that is optimized and consistent throughout the web application.
 
 ## PHPSandbox and Github
 
-All the code is available on [Github](https://github.com/victorokech/cloudinary-photobooth) and [PHPSandbox](https://phpsandbox.io/e/x/09rrc?layout=EditorPreview&defaultPath=%2F&theme=dark&showExplorer=no&openedFiles=) for a live demonstration of the Virtual Photo Booth Gallery.
+With [PHPSandbox](https://phpsandbox.io/e/x/09rrc?layout=EditorPreview&defaultPath=%2F&theme=dark&showExplorer=no&openedFiles=) we will be able to run a live demo of this project. All the code will be available on my [Github](https://github.com/victorokech/cloudinary-profile-image) repository for any references.
+
 
 ## Prerequisites
 
-To be able to follow this article, you need to have experience issuing commands through a terminal. You should also have some knowledge of Git version control and PHP specifically with the Laravel framework.
+To follow along, you need to have experience and be comfortable issuing commands through the terminal of your respective operating system. You should also have some knowledge of Git version control and PHP specifically with the Laravel framework.
 
 ## Getting Started
 
-We will need Composer to initiate a Laravel project and install our dependencies. Follow the steps below diligently. In step 1 we will install PHP and Composer.
+Composer is the de facto package installer for most PHP projects. Follow the steps below keenly to install PHP and Composer.
 
 1. Install [Composer](https://getcomposer.org/) and [PHP](https://www.php.net/manual/en/install.php) on
    your machine. Be sure to follow the steps for your respective operating system.
-2. There are two ways to install Laravel:
+2. Laravel can be installed in two ways:
 
 	1. Via Composer:
 
@@ -30,29 +31,23 @@ We will need Composer to initiate a Laravel project and install our dependencies
 	   `composer global require laravel/installer`
 
 	   `laravel new cloudinary-photobooth`
-3. Following the Laravel installation steps above will create a new application in the folder `cloudinary-photobooth`. Now we need to start the server and test our new application to ensure everything is okay. Change the directory to the project folder and run the local development server by typing the following commands:
+3. If you follow either one of the steps above you should have a brand new Laravel applicaiton in the folder `cloudinary-profile-image`. 
+   
+We need to run the server and test our application to ensure everything is okay. Fire it up by running the following commands:
 
-   `cd cloudinary-photobooth`
+   `cd cloudinary-profile-image`
 
    `php artisan serve`
 
-The Laravel server should be up and running and when you open `http://localhost:8000` on your computer, you should see the application default page shown in the image below:
+The Laravel server should be up and running and when you open `http://localhost:8000` on your browser, you should see the application default page shown in the image below:
 
 ![Laravel Server Running](https://res.cloudinary.com/dgrpkngjn/image/upload/v1655887283/watermark-api/assets/laravel-running_zqk8ol.png)
 
-## Setting up Cloudinary’s Laravel SDK
+## Resizing and Optimizing the Profile Images
 
-Cloudinary has made integration easy for different programming languages with their Programmable Media SDK libraries and with a vibrant community, there are community libraries available as well. In this article, we will use Cloudinary's Laravel SDK.
+Cloudinary is a media management and manipulation platform which comes in handy in this scenario. We will use it to manipulate the profile image the users upload for consistency and store the optimized profile images on Cloudinary for a faster performant application.
 
-1. First things first, we will need a Cloudinary account. You can sign up for one [here](https://cloudinary.com). Don't worry it's free. Log in with your details and you will be redirected to the Dashboard. Take note of your Account details, the  Cloud Name, API Key, API Secret and the API Environment variable, we will need them later.
-
-   ![Cloudinary Dashboard](https://res.cloudinary.com/dgrpkngjn/image/upload/v1655976836/assets/cloudinary_dashboard.png)
-2. Back at our terminal, we need to install [Cloudinary’s Laravel SDK](https://github.com/cloudinary-labs/cloudinary-laravel#installation). Run the following command:
-
-   `composer require cloudinary-labs/cloudinary-laravel`
-
-   **Note**: Follow the link to the SDK and ensure you follow all the steps in the #Installation section.
-3. To complete the setup we will need to add the Account details to our `.env` file as shown below:
+We will start by installing the [Cloudinary SDK](https://github.com/cloudinary-labs/cloudinary-laravel#installation) for Laravel and setting the Cloudinary credentials in our environmental file `.env`.
 
 ```
 CLOUDINARY_API_KEY=YOUR_CLOUDINARY_API_KEY
@@ -61,40 +56,32 @@ CLOUDINARY_CLOUD_NAME=YOUR_CLOUDINARY_CLOUD_NAME
 CLOUDINARY_URL=YOUR_CLOUDINARY_ENVIRONMENT_VARIABLE
 ```
 
-## Image Manipulation
+1. Go to your Cloudinary dashboard and get your Account details - the  Cloud Name, API Key, API Secret and the API Environment variable, we will need them later.
 
-Cloudinary is a great platform for media management and manipulation. It is perfect for our current use case since we will need to apply some transformations to the images our users will be uploading and return a URL that we will use to populate our gallery.
+   ![Cloudinary Dashboard](https://res.cloudinary.com/dgrpkngjn/image/upload/v1655976836/assets/cloudinary_dashboard.png)
+2. Install the Cloudinary SDK. Ensure you follow all the steps in the #Installation section from the Github repo of the SDK:
 
-To return their desired photo booth effect we will manipulate the photos as follows:
+   `composer require cloudinary-labs/cloudinary-laravel`
 
-1. Change the aspect ratio 0.75 which is a 3x4.
-2. Adjust the height to 1600px
-3. Apply an overlay of the respective effect chosen by the user
 
-Before we can start image manipulation, you'll have to upload the overlay effects to your Cloudinary media library. You can find them below:
+## User Interface
 
-1. [Cloudinary Rocks](https://res.cloudinary.com/dgrpkngjn/image/upload/v1657605042/photo-booth/assets/effect_one.png)
-2. [Rose Flowers](https://res.cloudinary.com/dgrpkngjn/image/upload/v1657605044/photo-booth/assets/effect_two.png)
-3. [Abstract](https://res.cloudinary.com/dgrpkngjn/image/upload/v1657605043/photo-booth/assets/effect_three.png)
-4. [Flower Petals Effect](https://res.cloudinary.com/dgrpkngjn/image/upload/v1657605043/photo-booth/assets/effect_four.png)
+Our user interface will be a very simple implementation of a user profile with a form to set and submit the user image.
 
-As you can see we will have four overlays in this project. You can download the above overlay effects and upload them to your Cloudinary Media library and name them as follows:
+We will use Bootstrap for our CSS and HTML and Livewire for our dynamic interfaces.
 
-1. `effect_one`
-2. `effect_two`
-3. `effect_three`
-4. `effect_four`
+1. Install Laravel UI
+   
+	`composer require laravel/ui`
 
-![Rename Overlay Effect](https://res.cloudinary.com/dgrpkngjn/image/upload/c_scale,w_940/v1657624036/photo-booth/assets/rename.png)
+2. Install Bootstrap UI. This will install the necessary scaffolding
+   
+	`php artisan ui bootstrap`
 
-## Uploading the Photos
-
-With the overlay effects uploaded, we will need a user interface to allow the user to upload images, for this, we will use the Laravel package Livewire.
-
-1. Install Livewire Package by running the following command in your Laravel project:
+3. Install the Livewire dependency:
 
    `composer require livewire/livewire`
-2. Include Livewire scripts and styles on every page that will be using Livewire. In our case `welcome.blade.php`:
+4. Include Livewire scripts and styles on every page that will be using Livewire. In our case `welcome.blade.php`:
 
 ```html
 ...
@@ -108,35 +95,34 @@ With the overlay effects uploaded, we will need a user interface to allow the us
 </html>
 ```
 
-3. We will then create a Livewire Component to handle our image uploads:
+5. We will then create a Livewire Component for our user profile:
 
-   `php artisan make:livewire PhotoBooth`
+   `php artisan make:livewire UserProfile`
 
-   This will create two files, first `app/Http/Livewire/PhotoBooth.php` and the other one
-   in `resources/views/livewire/photo-booth.blade.php`.
+   This creates two files, first `app/Http/Livewire/UserProfile.php` and the other `resources/views/livewire/user-profile.blade.php`.
 
    We can then use this component anywhere in our code using the following snippet:
 
-   `<livewire:photo-booth/>`
+   `<livewire:user-profile/>`
 
    or
 
-   `@livewire('photo-booth')`
+   `@livewire('user-profile')`
 4. Open `resources/views/welcome.blade.php` and add the following code within the `<body></body>` tags as shown below:
 
 ```html
 <body class="antialiased">
   <div>
-    @livewire('photo-booth')
+    @livewire('user-profile')
   </div>
 </body>
 ```
 
 This includes the Livewire component we created earlier in our `welcome.blade.php`.
 
-**Note:** Please ensure you go through the [Livewire documentation](https://laravel-livewire.com/docs/2.x/quickstart), to learn how to install and set it up.
+**Note:** Please ensure you go through the [Livewire documentation](https://laravel-livewire.com/docs/2.x/quickstart), to learn more.
 
-3. Open the file `resources/views/livewire/photo-booth.blade.php` and populate it with the following code:
+3. Open the file `resources/views/livewire/user-profile.blade.php` and populate it with the following code:
 
 ```html
 <form class="mb-5" wire:submit.prevent="photoBooth">
