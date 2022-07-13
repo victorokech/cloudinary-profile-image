@@ -74,14 +74,15 @@ We will use Bootstrap for our CSS and HTML and Livewire for our dynamic interfac
    
 	`composer require laravel/ui`
 
-2. Install Bootstrap UI. This will install the necessary scaffolding
+2. Install Bootstrap UI. This will install the necessary scaffolding for Laravel authentication.
    
 	`php artisan ui bootstrap`
+	`php artisan ui bootstrap --auth`
 
 3. Install the Livewire dependency:
 
    `composer require livewire/livewire`
-4. Include Livewire scripts and styles on every page that will be using Livewire. In our case `welcome.blade.php`:
+4. Include Livewire scripts and styles on every page that will be using Livewire. In our case `app.blade.php`:
 
 ```html
 ...
@@ -108,7 +109,7 @@ We will use Bootstrap for our CSS and HTML and Livewire for our dynamic interfac
    or
 
    `@livewire('user-profile')`
-4. Open `resources/views/welcome.blade.php` and add the following code within the `<body></body>` tags as shown below:
+4. Open `resources/views/layout/app.blade.php` and add the following code within the `<body></body>` tags as shown below:
 
 ```html
 <body class="antialiased">
@@ -118,169 +119,152 @@ We will use Bootstrap for our CSS and HTML and Livewire for our dynamic interfac
 </body>
 ```
 
-This includes the Livewire component we created earlier in our `welcome.blade.php`.
+This includes the Livewire component we created earlier in our `app.blade.php`.
 
 **Note:** Please ensure you go through the [Livewire documentation](https://laravel-livewire.com/docs/2.x/quickstart), to learn more.
 
 3. Open the file `resources/views/livewire/user-profile.blade.php` and populate it with the following code:
 
 ```html
-<form class="mb-5" wire:submit.prevent="photoBooth">
-	<div class="form-group row mt-5 mb-3">
-		<div class="input-group mb-5">
-			<select id="effect" type="file" class="form-select @error('effect') is-invalid @enderror"
-			        wire:model="effect">
-				<option selected>Choose Photo Effect ...</option>
-				<option selected value="effect_one">Cloudinary Rocks</option>
-				<option value="effect_two">Rose Flower</option>
-				<option value="effect_three">Abstract</option>
-				<option value="effect_four">Flower Petals</option>
-			</select>
-			@error('effect')
-			<div class="invalid-feedback">{{ $message }}</div>
-			@enderror
+<div class="flex h-screen justify-center items-center">
+	<div class="row w-100">
+		<div class="col-md-12 p-6 text-center">
+			<h1 class="w-100">Welcome {{ $user->name }}!</h1>
+			<div class="mt-5 mb-3">
+				<img class="img-fluid"
+				     src="{{ $user->profile_photo_path ?: 'https://res.cloudinary.com/dgrpkngjn/image/upload/f_auto,q_auto,w_100,h_100,g_face,c_thumb/v1657646841/profile-image/assets/default_profile.png' }}"
+				     alt="Profile Image"/>
+			</div>
+			@if(!$user->profile_photo_path)
+			<form class="mt-5 mb-5 flex align-items-center" wire:submit.prevent="setProfileImage">
+				<div class="input-group ml-4">
+					<input id="avatar" type="file" class="form-control @error('avatar') is-invalid @enderror"
+					       placeholder="Choose profile photo..." wire:model="avatar">
+					<button class="btn btn-outline-primary" type="submit">
+						Set Profile Image
+						<i class="spinner-border spinner-border-sm ml-1 mt-1" wire:loading wire:target="setProfileImage"></i>
+					</button>
+					@error('avatar')
+					<div class="invalid-feedback">{{ $message }}</div>
+					@enderror
+				</div>
+			</form>
+			@endif
 		</div>
-		<div class="input-group">
-			<input id="photo" type="file" class="form-control @error('photo') is-invalid @enderror"
-			       placeholder="Choose photo..." wire:model="photo">
-		
-			@error('photo')
-			<div class="invalid-feedback">{{ $message }}</div>
-			@enderror
-		</div>
-		<small class="text-muted text-center mt-2" wire:loading wire:target="photo">
-			{{ __('Uploading') }}…
-		</small>
 	</div>
-	<div class="text-center">
-		<button type="submit" class="btn btn-sm btn-primary w-25">
-			<i class="fas fa-check mr-1"></i> {{ __('Lights, Camera, Action') }}
-			<i class="spinner-border spinner-border-sm ml-1 mt-1" wire:loading wire:target="photoBooth"></i>
-		</button>
-	</div>
-</form>
+</div>
 ```
 
-This is a form with a select field, file input field and a button. You can refer to the code on Github for the full implementation.
+This will include a form that the user will use to update their profile photo/avatar when they log in.
+
+## SQLite Database
+
+We need to save our user data somewhere. We will use Laravel's SQLite integration which is suitable for small applications. We will make a few changes which will ensure we are able to connect to a database.
+
+1. Edit your `.env` file and change `DB_CONNECTION` to `sqlite`
+2. Open your `config/database.php` file and change the default to sqlite:
+
+   `'default' => env('DB_CONNECTION', 'sqlite'),`
+3. In the connections array, change sqlite's database key-value pair as shown below and leave the rest as is:
+
+```php
+'connections' => [
+    'sqlite' => [
+        'driver' => 'sqlite',
+        'url' => env('DATABASE_URL'),
+        'database' => database_path('database.sqlite'),
+        'prefix' => '',
+        'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+    ],  
+...
+];
+```
+
+Run the command `php artisan migrate:status` to test if you are connected, you should see the response `Migration table not found`.
+
+4. We need to add a new column that will hold our profile photos. Open the file `database\migrations\<timestamp>_create_users_table.php` and in the `up` under `Schema:create` add the following code just before `timestamps`:
+
+   `$table->string('profile_photo_path', 2048)->nullable();`
+
+   Your implementations should like this:
+
+   ```php
+   ...
+   
+   $table->string('profile_photo_path', 2048)->nullable(); //will store URL of profile image/avatar
+   $table->timestamps();
+   ```
+
+   Once done run the command `php artisan migrate`, this will run migrations which will create the users table among others.
+
 
 ## Implementation in Code
 
-Open the file `app/Http/Livewire/PhotoBooth.php` and update it with the following code:
+Open the file `app/Http/Livewire/UserProfile.php` and update it with the following code:
 
-1. First, we use Livewire's `WithFileUploads` to help us with file uploads, then create the variables `$photo`, `$effect`, `effectTransformations`, `$tag`, `$folder` and `$gallery` an array which will contain the transformed image URLs we get back from Cloudinary.
+1. First, we use Livewire's `WithFileUploads` to help us with profile image uploads, then create the variables `$user` and `$avatar`. The user variable will contain user data which we will pass to the view and the avatar variable will contain the profile image URL we get back from Cloudinary.
 
    ```php
    use WithFileUploads;  
 
-   public $photo;
-   public $effect;
-   public $gallery = [];
-   public $effectTransformations;
-   public $folder = "photo-booth";
-   public $tag = "photo-booth";
+   public $user;
+   public $avatar;
    ```
-2. Next, create the `photoBooth` function which will apply upload and apply transformations to create the respective effect.
+2. Next, under the `mount()` function we will assign the currently logged-in user to the `$user` variable we created earlier.
+   `$this->user = Auth::user();`
+   
+2. We will then create the `setProfileImage` function we will get the uploaded user profile image and upload it to Cloudinary with transformations to resize and optimize it for our application and with the `$user->id` as the `public_id`. This ensures that all images uploaded are unique, and we can dynamically recreate the profile photo path in our view.
 
    ```php
-   public function photoBooth() {
+   public function setProfileImage() {
     ...
    }
    ```
 3. Let's populate our method in step 2 above:
 
    ```php
-   public function photoBooth() {
-        $this->validate([
-          'effect' => 'required|string',
-          'photo' => ['required', 'image', 'max:10240'
-        ]);
+   public function setProfileImage() {
+      $this->validate([
+        'avatar' => ['required', 'image', 'max:10240'
+      ]);
+   
+      $userAvatar = cloudinary()->upload($this->avatar->getRealPath(), [
+				'folder'         => 'profile-image',
+				'public_id'      => $this->user->id,
+				'format'         => 'webp',
+				'transformation' => [
+					'format'  => 'auto',
+					'quality' => 'auto',
+					'crop'    => 'thumb',
+					'gravity' => 'face',
+					'radius'  => 'max',
+					'width'   => 100,
+					'height'  => 100,
+				]
+      ])->getSecurePath();
 
-        $photo = cloudinary()->upload($this->photo->getRealPath(), [
-            'folder' => $this->folder,
-            'aspect_ratio'   => 0.75,
-            'crop'           => 'fill',
-            'height'         => 1600,
-            'gravity' => 'faces'
-        ])->getSecurePath();
-
-       $this->effectTransformations = [
-          'overlay' => [
-              'public_id' => "$this->folder/assets/$this->effect",
-              'flags'     => 'layer_apply',
-              'width'     => 1.0,
-              'height'    => 1.0,
-          ]
-       ];
-
-       $transformed = cloudinary()->upload($photo, [
-          'folder' => $this->folder,
-          'tags'   => $this->tag,
-          'transformation' => $this->effectTransformations
-       ])->getSecurePath();
-
-       $this->gallery = Arr::prepend($this->gallery, $transformed);
+      $this->user->profile_photo_path = $userAvatar;
+      $this->user->save();
    }
    ```
 
-   Let's talk about the code.
+ Let's talk about the code. The code validates the user uploaded profile then sends an upload request to the Cloudinary upload API which returns a secure URL we assign to the variable `$userAvatar`. 
+   
+The transformations applied automatically format and manipulate the profile photo for the best performance of our app. We also apply `gravity` to the face, round the image with `radius` and `crop` it to thumb mode which will give us a nice rounded image perfect for profile photo.
 
-- ### Overlay Transformation
-
-  First, we create the effect transformations based on user input and assign them to the variable `$effectTransformations`.
-
-
-  ```php
-  $this->effectTransformations = [
-    ['crop' => 'crop', 'aspect_ratio' => 0.75, 'gravity' => 'faces', 'height' => 1600],
-    [
-	   'overlay' => [
-	     'public_id' => "$this->folder/assets/$this->effect",
-	     'flags'     => 'layer_apply',
-	     'width'     => 1.0,
-	     'height'    => 1.0,
-	   ]
-    ]
-   ];
-  ```
-
-- ### Upload Photo with Transformations
-
-  First, we upload the user image to Cloudinary, with an `aspect_ratio` of `0.75`, `crop` of `fill`, `gravity` set to `faces` and get the `secure_url` which we save in the variable `$photo`. The last line just prepends the transformed `$photo` to our `$this->gallery` array which we use to display the gallery.
-
-```php
-$photo = cloudinary()->upload($this->photo->getRealPath(), [
-	'folder'         => $this->folder, 
-	'tags'           => $this->tag,
-	'transformation' => $this->effectTransformations
-])->getSecurePath();
-
-$this->gallery = Arr::prepend($this->gallery, $photo);
-```
-
-Update our Livewire component view and add the following code beneath the form:
-
-```php
-<div class="row mt-4">
-	@foreach($this->gallery as $galleryItem)
-		@if ($galleryItem)
-			<div class="col-sm-3 col-md-3 mb-3">
-				<img class="card-img-top img-thumbnail img-fluid" src="{{ $galleryItem }}" alt="Virtual Photo Booth"/>
-			</div>
-		@endif
-	@endforeach
-</div>
-```
-
-This will display our gallery.
+The last steps of the code will update the `profile_photo_path` and save it to the database.
 
 With our code implementation complete, you should be able to see the following when you navigate to `http://localhost:8000`:
 
-![Cloudinary Virtual Photo Booth Demo](https://res.cloudinary.com/dgrpkngjn/image/upload/c_scale,w_940/v1657629350/photo-booth/assets/demo_ha4bgw.png)
+![Cloudinary Profile Image Demo](https://res.cloudinary.com/dgrpkngjn/image/upload/c_scale,w_940/v1657727044/profile-image/assets/cloudinary_profile_image_bttk6x.png)
 
-## Awesome
+When you upload a profile photo and hit the ***Set Profile Image*** button you should be able to see this:
 
-![Cloudinary Virtual Photo](https://res.cloudinary.com/dgrpkngjn/image/upload/c_scale,w_400/v1657629099/photo-booth/Xl3XxUTaukus92joF0MbF1HghboMZj-metaYmxhY2stbWFuLWhlcm8tYW5ncnktZXhwcmVzc2lvbi5qcGc_-_odrbyg.jpg)
+![Cloudinary Profile Image Success](https://res.cloudinary.com/dgrpkngjn/image/upload/c_scale,w_940/v1657727044/profile-image/assets/cloudinary_profile_image_success_qyq5we.png)
 
-Congratulations, we have built our own virtual photo booth powered by Cloudinary and Laravel. This is just the beginning, with Cloudinary you can create wonderful image management and manipulation products.
 
-Keep discovering more with Cloudinary, all you have to do is create [free](https://cloudinary.com/signup) account.
+## What Next?
+
+Congratulations are in order, we have automated the profile image/avatar creation on our app. There is still much to be done, like adding an edit button or photo transformation effects to truly create unique profile photos that are consistent with your design language, but I will let you tinker with Laravel and Cloudinary.
+
+It's not too late to start with a [free](https://cloudinary.com/signup) Cloudinary account.
