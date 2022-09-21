@@ -273,8 +273,6 @@ When you upload a profile image and hit the ***Set Profile Image*** button you s
 
 <figure style="height: 500px;"><iframe src="https://phpsandbox.io/e/x/mvw8q?&layout=EditorPreview&iframeId=5zsym5ubfi&theme=dark&defaultPath=/&showExplorer=no" style="display: block" loading="lazy" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" height="100%" width="100%"></iframe></figure>
 
-https://phpsandbox.io/e/x/mvw8q?&layout=EditorPreview&iframeId=5zsym5ubfi&theme=dark&defaultPath=/&showExplorer=no
-
 
 ## What Next?
 
