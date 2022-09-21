@@ -6,9 +6,9 @@
 
 Modern web and mobile applications allow users to upload images to be used for their profiles. Using Cloudinary we will upload, transform and optimize the image uploaded and return a profile image that is optimized and consistent throughout the web application.
 
-## PHPSandbox and Github
+## Github
 
-With [PHPSandbox]( https://phpsandbox.io/e/x/mvw8q?layout=EditorPreview&defaultPath=%2F&theme=dark&showExplorer=no&openedFiles= ) we will be able to run a live demo of this project. All the code will be available on my [Github](https://github.com/victorokech/cloudinary-profile-image) repository for any references.
+All the code will be available on my [Github](https://github.com/victorokech/cloudinary-profile-image) repository for any references.
 
 ## Prerequisites
 
@@ -270,6 +270,8 @@ When you upload a profile image and hit the ***Set Profile Image*** button you s
 ![Cloudinary Profile Image Success](https://res.cloudinary.com/dgrpkngjn/image/upload/c_scale,w_940/v1657727044/profile-image/assets/cloudinary_profile_image_success_qyq5we.png)
 
 ## PHPSandbox Demo
+
+Below is an embed of the project on PHPSandbox, if the embed does not work you can click [here](https://phpsandbox.io/e/x/mvw8q?layout=EditorPreview&defaultPath=%2F&theme=dark&showExplorer=no&openedFiles=) to view the application directly on PHPSandbox.
 
 <figure style="height: 500px;"><iframe src="https://phpsandbox.io/e/x/mvw8q?&layout=EditorPreview&iframeId=5zsym5ubfi&theme=dark&defaultPath=/&showExplorer=no" style="display: block" loading="lazy" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" height="100%" width="100%"></iframe></figure>
 
