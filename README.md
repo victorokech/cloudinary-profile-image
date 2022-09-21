@@ -269,9 +269,7 @@ When you upload a profile image and hit the ***Set Profile Image*** button you s
 
 ![Cloudinary Profile Image Success](https://res.cloudinary.com/dgrpkngjn/image/upload/c_scale,w_940/v1657727044/profile-image/assets/cloudinary_profile_image_success_qyq5we.png)
 
-## PHPSandbox
-
-Below is the 
+## PHPSandbox Demo
 
 <figure style="height: 500px;"><iframe src="https://phpsandbox.io/e/x/mvw8q?&layout=EditorPreview&iframeId=i33m5hpiy4&theme=dark&defaultPath=/&showExplorer=no" style="display: block" loading="lazy" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" height="100%" width="100%"></iframe></figure>
 
